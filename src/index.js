@@ -32,7 +32,7 @@ const storage = multer.diskStorage({
     },
 });
 
-const PORT = 4000
+const PORT = process.env.PORT || 4000
 const jsonBodyMiddleware = express.json()
 const upload = multer({storage})
 
@@ -41,7 +41,7 @@ app.use(cors())
 app.use('/uploads', express.static('src/images'))
 
 mongoose.
-    connect('mongodb+srv://admin:admin@cluster0.oeiwm.mongodb.net/blog?retryWrites=true&w=majority')
+    connect(process.env.MONGODB_URI)
     .then(() => console.log('DB connected'))
     .catch(err => console.log(err))
 

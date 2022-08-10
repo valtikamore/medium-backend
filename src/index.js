@@ -32,7 +32,7 @@ const storage = multer.diskStorage({
     },
 });
 
-const PORT = process.env.POST || 4000
+const PORT = process.env.PORT || 4000
 const jsonBodyMiddleware = express.json()
 const upload = multer({storage})
 

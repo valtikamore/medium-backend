@@ -3,7 +3,7 @@ import mongoose from 'mongoose'
 import cors from 'cors'
 import multer from 'multer'
 import checkAuth from './utils/checkAuth.js'
-import { login, me, register} from "./controllers/UserController.js";
+import {login, me, register, updateProfile} from "./controllers/UserController.js";
 import {
     create, createComment,
     deleteOne,
@@ -41,13 +41,19 @@ app.use(cors())
 app.use('/uploads', express.static('src/images'))
 
 mongoose.
-    connect(process.env.MONGODB_URI)
+    connect('mongodb+srv://admin:admin@cluster0.oeiwm.mongodb.net/blog?retryWrites=true&w=majority')
     .then(() => console.log('DB connected'))
     .catch(err => console.log(err))
+
+
+app.get('/',  (req, res) => {
+    res.redirect('/posts');
+});
 
 app.post('/register',registerValidation, handleValidationError,  register)
 app.post('/login', loginValidation, handleValidationError,  login)
 app.get('/me',checkAuth ,me)
+app.patch('/profile',checkAuth, updateProfile)
 
 
 app.get('/posts/tags',getLastTags)
@@ -69,6 +75,9 @@ app.post('/uploads',checkAuth, upload.single('image'), (req,res) => {
 })
 
 
-app.listen(PORT, () => {
+app.listen(PORT, (err) => {
+    if(err) {
+        console.log(err)
+    }
     console.log('start')
 })

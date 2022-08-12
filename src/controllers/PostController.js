@@ -5,7 +5,15 @@ import {validationResult} from "express-validator";
 
 export const getAll = async (req, res) => {
     try {
-        const posts = await PostModel.find().populate('user').exec()
+        const {sortBy,filter}  = req.query
+
+        const filtered = filter ? {
+            tags: filter
+        } : undefined
+
+        const posts = await PostModel.find(filtered).sort(
+            {[sortBy]: -1}
+        ).populate('user').exec()
 
         res.json(posts)
     } catch (e) {
@@ -37,7 +45,12 @@ export const getOne = async (req, res) => {
                     })
                 }
                 await doc.populate('user')
-                await doc.populate('comments')
+                await doc.populate({
+                    path: 'comments',
+                    populate: {
+                        path: 'user'
+                }
+                })
                 res.json(doc)
             }
         )
@@ -96,7 +109,7 @@ export const create = async (req, res) => {
             tags: req.body.tags,
             user: req.userId
         })
-        console.log(doc)
+
         const post = await doc.save()
 
         res.json(post)
@@ -115,7 +128,8 @@ export const getLastTags = async (req,res) => {
             .filter(post => post.tags.length > 0)
             .flatMap(post => post.tags.filter(Boolean))
             .slice(0,5)
-        res.json(tags)
+
+        res.json([...new Set(tags)])
     } catch (e) {
         res.status(500).json({
             message: 'failed to fetch tags'
@@ -126,13 +140,13 @@ export const getLastTags = async (req,res) => {
 export const createComment = async (req,res) => {
     try {
         const comment = new CommentModel({
-            userName: req.body.userName,
+            user: req.userId,
             content: req.body.content,
         })
 
+
         await comment.save()
         const post = await PostModel.findById(req.body.id)
-
         post.comments.push(comment)
 
         await post.save()

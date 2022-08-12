@@ -1,7 +1,6 @@
 import UserModel from "../models/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import {validationResult} from "express-validator";
 
 export const login = async (req,res) => {
     try {
@@ -64,6 +63,7 @@ export const register = async  (req,res) => {
 export const me = async (req,res) => {
     try {
         const user = await UserModel.findById(req.userId)
+        console.log(user)
 
         if(!user) {
             return res.status(404).json({
@@ -76,6 +76,32 @@ export const me = async (req,res) => {
     } catch (e) {
         res.status(500).json({
             message: 'failed to auth'
+        })
+    }
+}
+
+export const updateProfile = async (req,res) => {
+    try {
+
+        const update = {
+            $set: {avatarUrl: req.body.avatarUrl}
+        }
+
+        const user = await UserModel.updateOne({_id:req.userId}, update)
+
+        if(!user) {
+            return res.status(404).json({
+                message: 'user not founded'
+            })
+        }
+
+        res.json({
+            message: 'success'
+        })
+
+    } catch (e) {
+        res.status(500).json({
+            message: 'failed to update profile'
         })
     }
 }
